@@ -1,0 +1,1 @@
+g++ --std=c++17 -o feldman feldman.cpp -lssl -lcrypto -g

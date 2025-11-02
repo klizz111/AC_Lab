@@ -1,0 +1,1 @@
+g++ ./paillier.cpp -o paillier -lssl -lcrypto -std=c++11

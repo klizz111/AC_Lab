@@ -1,0 +1,1 @@
+g++ ./bgn.cpp -o bgn --std=c++17 -lpbc -lgmp -lssl -lcrypto

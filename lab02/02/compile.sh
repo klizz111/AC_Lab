@@ -1,0 +1,1 @@
+g++ ./elgamal.cpp -o elgamal -lssl -lcrypto
