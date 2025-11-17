@@ -1,10 +1,10 @@
 // Sudoku 生成
-#![allow(dead_code,unused_imports,unused_variables)]
+#![allow(dead_code, unused_imports, unused_variables)]
 
 pub struct Sudoku {
     pub solution: Vec<Vec<u8>>,
     pub puzzle: Vec<Vec<u8>>,
-    pub cast: Vec<u8> // 映射
+    pub cast: Vec<u8>, // 映射
 }
 
 impl Sudoku {
@@ -135,11 +135,10 @@ impl Sudoku {
         }
     }
 
-    pub fn init(&mut self) {
-        let cls =
+    pub fn init(&mut self, clues: Option<usize>) {
         self.base_mod();
         self.full_mod();
-        self.gen_puzzle(None);
+        self.gen_puzzle(clues);
     }
 
     pub fn gen_cast(&mut self) -> Vec<u8> {
@@ -147,7 +146,7 @@ impl Sudoku {
         use rand::seq::SliceRandom;
 
         let mut rng = rng();
-        self.cast[1..].shuffle(&mut rng); 
+        self.cast[1..].shuffle(&mut rng);
 
         return self.cast.clone();
     }
@@ -173,7 +172,7 @@ mod tests {
     #[test]
     fn test_sudoku_generation() {
         let mut sudoku = Sudoku::new();
-        sudoku.init();
+        sudoku.init(Some(30));
 
         sudoku.print_it(0);
         sudoku.print_it(1);
@@ -183,6 +182,6 @@ mod tests {
     fn test_gen_cast() {
         let mut sudoku = Sudoku::new();
         let cast = sudoku.gen_cast();
-        println!("Generated cast: {:?}", cast); 
+        println!("Generated cast: {:?}", cast);
     }
 }

@@ -1,24 +1,26 @@
-use std::hash::{DefaultHasher, Hash, Hasher};
+use crate::soduku::{CommitMat, Matrix};
 use rand::Rng;
-use crate::soduku::{Matrix, CommitMat};
+use std::hash::{DefaultHasher, Hash, Hasher};
 
 // 全矩阵承诺
 pub trait MatCommit {
-    fn commit(&self) -> (CommitMat, CommitMat) where Self: Sized;
+    fn commit(&self) -> (CommitMat, CommitMat)
+    where
+        Self: Sized;
     fn verify(&self, commited: &CommitMat, random: &CommitMat) -> bool;
     fn get_a_cell(&self, cell_no: u8) -> Vec<Vec<u8>>;
 }
 
 impl MatCommit for Matrix {
     fn commit(&self) -> (CommitMat, CommitMat) {
-        let mut commited_mat: CommitMat = vec![vec![0u64; 9]; 9]; 
+        let mut commited_mat: CommitMat = vec![vec![0u64; 9]; 9];
         let mut random_mat: CommitMat = vec![vec![0u64; 9]; 9];
         let mut rng = rand::rng();
 
         for row in 0..9 {
             for col in 0..9 {
                 let mut hasher = DefaultHasher::new();
-                let rand_val: u64 = rng.random_range(1..=2^64 -1);
+                let rand_val: u64 = rng.random_range(1..=u64::MAX);
                 random_mat[row][col] = rand_val;
                 let hash_input = (self[row][col], rand_val);
                 hash_input.hash(&mut hasher);
@@ -29,7 +31,7 @@ impl MatCommit for Matrix {
         (commited_mat.clone(), random_mat.clone())
     }
 
-        fn verify(&self, commited: &CommitMat, random: &CommitMat) -> bool {
+    fn verify(&self, commited: &CommitMat, random: &CommitMat) -> bool {
         for row in 0..9 {
             for col in 0..9 {
                 let mut hasher = DefaultHasher::new();
@@ -52,7 +54,8 @@ impl MatCommit for Matrix {
 
         for i in 0..3 {
             for j in 0..3 {
-                cell[i as usize][j as usize] = self[(start_row + i) as usize][(start_col + j) as usize];
+                cell[i as usize][j as usize] =
+                    self[(start_row + i) as usize][(start_col + j) as usize];
             }
         }
 
@@ -68,14 +71,14 @@ pub trait CastCommit {
 
 impl CastCommit for Vec<u8> {
     fn commit(&self) -> (Vec<u64>, Vec<u64>) {
-        let mut commited_vec: Vec<u64> = vec![0u64; self.len()]; 
+        let mut commited_vec: Vec<u64> = vec![0u64; self.len()];
         let mut random_vec: Vec<u64> = vec![0u64; self.len()];
-        
+
         let mut rng = rand::rng();
 
         for i in 0..self.len() {
             let mut hasher = DefaultHasher::new();
-            let rand_val: u64 = rng.random_range(1..=2^64-1);
+            let rand_val: u64 = rng.random_range(1..=u64::MAX);
             random_vec[i] = rand_val;
             let hash_input = (self[i], rand_val);
             hash_input.hash(&mut hasher);
@@ -84,7 +87,7 @@ impl CastCommit for Vec<u8> {
 
         (commited_vec.clone(), random_vec.clone())
     }
-    
+
     fn verify(&self, commited: &Vec<u64>, random: &Vec<u64>) -> bool {
         for i in 0..self.len() {
             let mut hasher = DefaultHasher::new();
@@ -111,7 +114,8 @@ impl CommitMat_ for CommitMat {
 
         for i in 0..3 {
             for j in 0..3 {
-                cell[i as usize][j as usize] = self[(start_row + i) as usize][(start_col + j) as usize];
+                cell[i as usize][j as usize] =
+                    self[(start_row + i) as usize][(start_col + j) as usize];
             }
         }
 
@@ -151,11 +155,24 @@ pub fn v_a_cell(cmmt: &Vec<Vec<u64>>, rand: &Vec<Vec<u64>>, mat: &Matrix) -> boo
     true
 }
 
+pub fn v_a_value(value: u8, random: u64, commt: u64) -> bool {
+    // 验证 1 个值的承诺是否正确
+    let mut hasher = DefaultHasher::new();
+    let hash_in = (value, random);
+    hash_in.hash(&mut hasher);
+    let computed_hash = hasher.finish() as u64;
+    if computed_hash != commt {
+        return false;
+    }
+
+    true
+}
+
 #[test]
 fn test_commit() {
     use crate::soduku::sudoku_gen::Sudoku;
     let mut sudoku = Sudoku::new();
-    sudoku.init();
+    sudoku.init(Some(30));
     let original_mat = sudoku.get_solution();
     let (commited_mat, random_mat) = original_mat.commit();
     print!("Original Matrix: {:?}\n", original_mat);
@@ -169,10 +186,14 @@ fn test_commit() {
     print!("Original Cast: {:?}\n", original_cast);
     print!("Commited Cast: {:?}\n", commited_cast);
     print!("Random Cast: {:?}\n", random_cast);
-    
+
     assert!(original_cast.verify(&commited_cast, &random_cast));
 
-    assert!(v_a_line(&commited_cast[0..9].to_vec(), &random_cast[0..9].to_vec(), &original_cast[0..9].to_vec()));
+    assert!(v_a_line(
+        &commited_cast[0..9].to_vec(),
+        &random_cast[0..9].to_vec(),
+        &original_cast[0..9].to_vec()
+    ));
 
     let cell_no = 4;
     let cell_mat = original_mat.get_a_cell(cell_no);

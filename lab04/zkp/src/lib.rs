@@ -1,4 +1,4 @@
-#![allow(dead_code,unused_imports,unused_variables)]
-pub mod soduku;
-pub mod networks;
+#![allow(dead_code, unused_imports, unused_variables)]
 pub mod challenge;
+pub mod networks;
+pub mod soduku;

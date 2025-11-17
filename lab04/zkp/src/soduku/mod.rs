@@ -3,7 +3,7 @@ pub mod sudoku_gen;
 pub type Matrix = Vec<Vec<u8>>;
 pub type CommitMat = Vec<Vec<u64>>;
 
-trait MatrixP {
+pub trait MatrixP {
     fn print(&self);
 }
 
@@ -32,7 +32,6 @@ impl MatrixP for Matrix {
         }
     }
 }
-
 
 #[test]
 

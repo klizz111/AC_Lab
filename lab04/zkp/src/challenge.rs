@@ -1,5 +1,12 @@
-#[derive(Debug, Clone, Copy)]
-pub enum ChallengeType { Row(usize), Col(usize), Box(usize), Clue } 
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum ChallengeType {
+    Row(usize),
+    Col(usize),
+    Box(usize),
+    Clue,
+}
 
 pub fn random_challenge(n: usize) -> ChallengeType {
     use rand::Rng;
