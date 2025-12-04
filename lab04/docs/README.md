@@ -13,8 +13,6 @@ Kernel: Linux 5.15.153.1-microsoft-standard-WSL2
 
 ##  1.  数独零知识证明
 
-
-
 ## 环境依赖
 
 ```shell

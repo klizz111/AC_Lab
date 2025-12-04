@@ -167,7 +167,6 @@ pub fn v_a_value(value: u8, random: u64, commt: u64) -> bool {
 
     true
 }
-
 #[test]
 fn test_commit() {
     use crate::soduku::sudoku_gen::Sudoku;

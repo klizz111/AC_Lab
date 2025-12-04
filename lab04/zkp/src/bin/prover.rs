@@ -486,8 +486,6 @@ macro_rules! printusage {
 fn parser(args: Vec<String>) -> Result<(), String> {
     if args.len() < 5 {
         printusage!();
-        use std::process;
-        process::exit(1);
     }
 
     let host = if args[1] == "-" {
