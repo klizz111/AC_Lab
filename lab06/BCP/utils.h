@@ -20,6 +20,7 @@ using Ctx = std::unique_ptr<BN_CTX, CtxDeleter>;
 class BNUtils {
   public:
     static Big make();
+    static Ctx cmake();
     static Big from_hex(const std::string& hex);
     static Big from_uint(uint64_t value);
     static Big dup(const BIGNUM* src);

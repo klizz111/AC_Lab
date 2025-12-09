@@ -258,3 +258,11 @@ void BNUtils::generate_prime(Big& out, int bits, bool safe) {
     if (!BN_generate_prime_ex(out.get(), bits, safe ? 1 : 0, nullptr, nullptr, nullptr))
         throw std::runtime_error("BN_generate_prime_ex failed");
 }
+
+Ctx BNUtils::cmake()
+{
+    Ctx ctx(BN_CTX_new());
+    if (!ctx) throw std::runtime_error("BN_CTX_new failed");
+    return ctx;
+}
+

@@ -82,8 +82,11 @@ class ReKey {
         // 待学生实现：计算 rk = sk_to * sk_from^{-1} mod q
         // 实现提示：
         // 1) 计算 inv = from.sk_ 的模逆（模 q）。
+        auto inv = BNUtils::mod_inv(from.sk_, params.q());
         // 2) factor_ = to.sk_ * inv mod q。
         // 3) factor_ 存储在成员变量中。
+        factor_ = BNUtils::mod_mul(to.sk_, inv, params.q());
+        return;
         throw std::logic_error("TODO: 请实现 ReKey 构造函数");
     }
 
@@ -117,10 +120,19 @@ class ProxyReEncryption {
         // 待学生实现：ElGamal 形式的加密
         // 实现提示：
         // 1) 检查明文 m < p，否则抛异常（超界）。
+        if (BNUtils::cmp(m, params_.p()) >= 0) {
+            throw std::runtime_error("Plaintext m is out of range");
+        }
         // 2) 随机 r∈Z_q。
+        auto r = BNUtils::random_range(params_.q());
         // 3) c1 = h^r mod p，其中 h = kp.pk_。
+        auto c1 = BNUtils::mod_exp(kp.pk_, r, params_.p());
         // 4) g_r = g^r mod p；c2 = m * g_r mod p。
+        auto g_r = BNUtils::mod_exp(params_.g(), r, params_.p());   
+        auto c2 = BNUtils::mod_mul(m, g_r, params_.p());
         // 5) 返回 Ciphertext(c1, c2)。
+        return Ciphertext(BNUtils::dup(c1), BNUtils::dup(c2));
+
         throw std::logic_error("TODO: 请实现 encrypt");
     }
 
@@ -130,8 +142,11 @@ class ProxyReEncryption {
         // 待学生实现：使用 rk.factor_ 重新加密 c1
         // 实现提示：
         // 1) new_c1 = c1^{rk.factor_} mod p，等效替换公钥指数。
+        auto new_c1 = BNUtils::mod_exp(ct.c1_, rk.factor_, params_.p());
         // 2) c2 保持不变（可直接 dup）。
         // 3) 返回新的 Ciphertext(new_c1, c2)。
+        return Ciphertext(BNUtils::dup(new_c1), BNUtils::dup(ct.c2_));
+
         throw std::logic_error("TODO: 请实现 reencrypt");
     }
 
@@ -140,9 +155,14 @@ class ProxyReEncryption {
         // 待学生实现：用私钥 x 解密
         // 实现提示：
         // 1) inv_sk = sk^{-1} mod q。
+        auto in_sk = BNUtils::mod_inv(kp.sk_, params_.q());
         // 2) g_r = (c1)^{inv_sk} mod p，恢复 g^r。
+        auto g_r = BNUtils::mod_exp(ct.c1_, in_sk, params_.p());
         // 3) g_r_inv = g_r^{-1} mod p。
+        auto g_r_inv = BNUtils::mod_inv(g_r, params_.p());
         // 4) m = c2 * g_r_inv mod p。
+        auto m = BNUtils::mod_mul(ct.c2_, g_r_inv, params_.p());
+        return m;
         throw std::logic_error("TODO: 请实现 decrypt");
     }
 
