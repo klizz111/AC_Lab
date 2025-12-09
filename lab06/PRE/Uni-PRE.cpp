@@ -64,9 +64,17 @@ class ReKey {
         // 待学生实现：生成单向重加密密钥 k = g^{x_j/x_i} ∈ G1
         // 实现提示：
         // 1) 创建 ReKey rk(pairing) 作为返回值。
+        ReKey rk(pairing);
         // 2) 计算 inv = x_i^{-1}（模群阶，pbc 内部处理）。
+        auto inv = common::ZrElement(pairing);
+        inv.setInvert(from.sk());
         // 3) 先算 temp = g^{inv}，再 temp^{x_j}，得到 g^{x_j / x_i}。
+        auto temp = common::G1Element(pairing);
+        temp.setPowZn(g, inv);
+        temp.setPowZn(temp, to.sk());
         // 4) 将结果写入 rk.k_，最后返回 rk。
+        rk.k_ = std::move(temp);
+        return rk;
         throw std::logic_error("TODO: 请实现 ReKey::derive");
     }
 
@@ -99,10 +107,17 @@ class ProxyReEncryption {
         // 待学生实现：一次加密生成 (c1, c2)
         // 实现提示：
         // 1) Ciphertext1 ct(pairing) 初始化。
+        Ciphertext1 ct(params_.pairing());
         // 2) 随机 r ∈ Z_r。
+        auto r = common::ZrElement(params_.pairing());
         // 3) c1 = h_i^r，使用 setPowZn(kp.pk(), r)。
+        ct.c1.setPowZn(kp.pk(), r);
         // 4) 计算 Z_r = Z^r；c2 = m * Z_r。
+        auto Z_r = common::GTElement(params_.pairing());
+        Z_r.setPowZn(params_.Z(), r);
+        ct.c2.setMul(m, Z_r);
         // 5) 返回 ct。
+        return ct;
         throw std::logic_error("TODO: 请实现 enc1");
     }
 
@@ -111,9 +126,13 @@ class ProxyReEncryption {
         // 待学生实现：代理用 rk 生成第二阶段密文
         // 实现提示：
         // 1) Ciphertext2 out(pairing) 初始化。
+        Ciphertext2 out(params_.pairing());
         // 2) out.c1 = e(ct.c1, rk.value())，调用 setPairing。
+        out.c1.setPairing(ct.c1, rk.value(), params_.pairing());
         // 3) out.c2 直接复制 ct.c2（无需变动）。
+        out.c2.set(ct.c2);
         // 4) 返回 out。
+        return out;
         throw std::logic_error("TODO: 请实现 reencrypt");
     }
 
@@ -122,9 +141,16 @@ class ProxyReEncryption {
         // 待学生实现：接收方用自身私钥解密第二阶段密文
         // 实现提示：
         // 1) inv_sk = sk^{-1}（Z_r 元素）。
+        auto inv_sk = common::ZrElement(params_.pairing());
         // 2) Z_r = (ct.c1)^{inv_sk} = Z^r。
+        auto Z_r = common::GTElement(params_.pairing());
+        Z_r.setPowZn(ct.c1, inv_sk);
         // 3) 求 Z_r 的逆 inv = (Z^r)^{-1}。
+        Z_r.invert();
         // 4) m = ct.c2 * inv。
+        auto m = common::GTElement(params_.pairing());
+        m.setMul(ct.c2, Z_r);
+        return m;
         // 5) 返回明文 m。
         throw std::logic_error("TODO: 请实现 dec2");
     }
