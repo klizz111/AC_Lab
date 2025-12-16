@@ -110,6 +110,7 @@ class ProxyReEncryption {
         Ciphertext1 ct(params_.pairing());
         // 2) 随机 r ∈ Z_r。
         auto r = common::ZrElement(params_.pairing());
+        r.randomize();
         // 3) c1 = h_i^r，使用 setPowZn(kp.pk(), r)。
         ct.c1.setPowZn(kp.pk(), r);
         // 4) 计算 Z_r = Z^r；c2 = m * Z_r。
@@ -142,6 +143,8 @@ class ProxyReEncryption {
         // 实现提示：
         // 1) inv_sk = sk^{-1}（Z_r 元素）。
         auto inv_sk = common::ZrElement(params_.pairing());
+        inv_sk.set(kp.sk());
+        inv_sk.invert();
         // 2) Z_r = (ct.c1)^{inv_sk} = Z^r。
         auto Z_r = common::GTElement(params_.pairing());
         Z_r.setPowZn(ct.c1, inv_sk);
