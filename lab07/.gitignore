@@ -1,0 +1,8 @@
+/target
+cargo.lock
+/.vscode
+*.md
+/bin
+.crates**
+!/docs/README.md
+*.pdf
