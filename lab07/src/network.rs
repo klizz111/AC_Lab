@@ -10,14 +10,19 @@ pub struct Network {
 
 impl Network{
     pub fn new(stream: TcpStream) -> Self {
+        let _ = stream.set_nodelay(false);
         Network { stream }
     }
 
     pub async fn send<T: Serialize>(&mut self, data: &T) -> Result<()> {
         let serialized = serde_json::to_string(data)?;
         let len = serialized.len() as u32;
-        self.stream.write_all(&len.to_be_bytes()).await?;
-        self.stream.write_all(serialized.as_bytes()).await?;
+
+        let mut buf = Vec::with_capacity(4 + serialized.len());
+        buf.extend_from_slice(&len.to_be_bytes());
+        buf.extend_from_slice(serialized.as_bytes());
+
+        self.stream.write_all(&buf).await?;
         Ok(())
     }
 
